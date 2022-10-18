@@ -7,14 +7,15 @@ using SDG.Unturned;
 
 namespace ItemCountExpander
 {
-    [HarmonyPatch]
     public class Module : IModuleNexus
     {
         private readonly Harmony HarmonyInstance = new Harmony(nameof(ItemCountExpander));
 
         public void initialize()
         {
-            HarmonyInstance.PatchAll(typeof(Module).Assembly);
+            var transpiler = new HarmonyMethod(typeof(Module), nameof(Transpiler));
+            HarmonyInstance.Patch(typeof(PlayerInventory).GetMethod("ReceiveDragItem"), transpiler: transpiler);
+            HarmonyInstance.Patch(typeof(Items).GetMethod("tryAddItem", new Type[] { typeof(Item), typeof(bool) }), transpiler: transpiler);
         }
 
         public void shutdown()
@@ -22,9 +23,6 @@ namespace ItemCountExpander
             HarmonyInstance.UnpatchAll(HarmonyInstance.Id);
         }
 
-        [HarmonyPatch(typeof(PlayerInventory), "ReceiveDragItem")]
-        [HarmonyPatch(typeof(Items), "tryAddItem", typeof(Item), typeof(bool))]
-        [HarmonyTranspiler]
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             foreach (var inst in instructions)
