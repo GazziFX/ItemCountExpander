@@ -15,6 +15,7 @@ namespace ItemCountExpander
         {
             var transpiler = new HarmonyMethod(typeof(Module), nameof(Transpiler));
             HarmonyInstance.Patch(typeof(PlayerInventory).GetMethod("ReceiveDragItem"), transpiler: transpiler);
+            HarmonyInstance.Patch(typeof(PlayerInventory).GetMethod("tryAddItem", new Type[] { typeof(Item), typeof(byte), typeof(byte), typeof(byte), typeof(byte) }), transpiler: transpiler);
             HarmonyInstance.Patch(typeof(Items).GetMethod("tryAddItem", new Type[] { typeof(Item), typeof(bool) }), transpiler: transpiler);
         }
 
